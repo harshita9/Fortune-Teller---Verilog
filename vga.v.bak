@@ -1,0 +1,222 @@
+
+module control(input clk,
+    input resetn,
+    input go,
+    output reg  ld_color1, ld_color2, ld_number, ld_r
+    );
+	 
+	reg [5:0] current_state, next_state; 
+	
+	 localparam  S_LOAD_C1        = 5'd0,
+                S_LOAD_C1_WAIT   = 5'd1,
+                S_LOAD_N        = 5'd2,
+                S_LOAD_N_WAIT   = 5'd3,
+                S_LOAD_C2        = 5'd4,
+                S_LOAD_C2_WAIT   = 5'd5,                
+					 S_DISPLAY		   =5'd6;
+					 
+	 // Next state logic aka our state table
+    always@(*)
+    begin: state_table 
+            case (current_state)
+                S_LOAD_C1: next_state = go ? S_LOAD_C1_WAIT : S_LOAD_C1; // Loop in current state until value is input
+                S_LOAD_C1_WAIT: next_state = go ? S_LOAD_C1_WAIT : S_LOAD_N; // Loop in current state until go signal goes low
+                S_LOAD_N: next_state = go ? S_LOAD_N_WAIT : S_LOAD_N; // Loop in current state until value is input
+                S_LOAD_N_WAIT: next_state = go ? S_LOAD_N_WAIT : S_LOAD_C2; // Loop in current state until go signal goes low
+                S_LOAD_C2: next_state = go ? S_LOAD_C2_WAIT : S_LOAD_C2; // Loop in current state until value is input
+                S_LOAD_C2_WAIT: next_state = go ? S_LOAD_C2_WAIT : S_DISPLAY; // Loop in current state until go signal goes low
+                S_DISPLAY: next_state =  S_LOAD_C1;
+				default:     next_state = S_LOAD_C1;
+        endcase
+    end // state_table
+
+// Output logic aka all of our datapath control signals
+    always @(*)
+    begin: enable_signals
+        // By default make all our signals 0
+        ld_color1 = 1'b0;
+        ld_color2 = 1'b0;
+        ld_number = 1'b0;
+         ld_r = 1'b0;
+        case (current_state)
+            S_LOAD_C1: begin
+                ld_color1 = 1'b1;
+                end
+            S_LOAD_C2: begin
+                ld_color2 = 1'b1;
+                end
+            S_LOAD_N: begin
+                ld_number = 1'b1;
+                end
+           
+				S_DISPLAY: begin
+               ld_r=1'b1;
+            end
+        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        endcase
+    end // enable_signals
+   
+    // current_state registers
+    always@(posedge clk)
+    begin: state_FFs
+        if(!resetn)
+            current_state <= S_LOAD_C1;
+        else
+            current_state <= next_state;
+    end // state_FFS	 
+					
+	 
+	 
+endmodule
+    
+
+module datapath(input color1,color2,input[3:0]numbers,
+	input clk,
+    input resetn, 
+    input ld_color1, ld_color2, ld_number,
+    input ld_r,
+    output reg [5:0] pattern);
+	 
+	 reg c1,c2;
+	 reg [3:0]num;
+	 
+	 always@(posedge clk) begin
+        if(!resetn) begin
+            c1 <= 1'b0; 
+            c2 <= 1'b0; 
+            num <= 4'd0; 
+       
+        end
+        else begin
+            if(ld_color1)
+                c1 <= color1;
+            if(ld_color2)
+               c2<=color2;
+            if(ld_number)
+                num <= numbers;
+        end
+    end
+ 
+ 
+    // Output result register
+    always@(posedge clk) begin
+        if(!resetn) begin
+            pattern <= 6'd0; 
+        end
+        else 
+            if(ld_r)
+                pattern <= {c1,num,c2};
+    end
+
+	 
+	 
+endmodule
+
+
+module colorDisplay(input ld_color1,
+
+reg [7:0]x;
+
+reg [6:0]y;
+
+reg [14:0]address;
+
+reg plot;
+
+
+
+always @(posedge CLOCK_50)
+
+
+
+if(!change || start)
+
+begin
+
+
+
+	plot <= 1;
+
+	begin
+
+	
+
+		if(address < 19200)
+
+		begin
+
+		   
+
+			//cannot fix the first pixel.
+
+			if(address == 0)
+
+			begin
+
+				x <= 0;
+
+				y <= 0;
+
+			end
+
+			
+
+			
+
+			address <= address + 1;
+
+			x <= x + 1;	
+
+				
+
+			if(x == 159)
+
+			begin
+
+				x <= 0;
+
+				y <= y + 1;
+
+			end
+
+				
+
+			if(y == 319)
+
+			begin
+
+				x <= 0;
+
+				y <= 0;
+
+			end
+
+				
+
+			
+
+		end	
+
+		
+
+	end
+
+		
+
+end
+
+
+
+else	
+
+begin
+
+	plot <= 0;
+
+	address <= 0;
+
+	x<=0;
+
+	y<=0;
+
+end

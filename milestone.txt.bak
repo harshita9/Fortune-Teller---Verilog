@@ -1,0 +1,106 @@
+# set the working dir, where all compiled verilog goes
+vlib work
+
+# compile all verilog modules in mux.v to working dir
+# could also have multiple verilog files
+vlog memory.v milestone1.v finalprogject1.v representation.v
+
+#load simulation using lab4Part2 as the top level simulation module
+vsim -L altera_mf_ver main
+
+#log all signals and add some signals to waveform window
+log {/*}
+# add wave {/*} would add all items in top level simulation module
+add wave {/*}
+
+
+
+
+force resetn 1'b0
+force clk 1'b1
+run 1ns
+force resetn 1'b1
+force {clk} 0 0ns, 1 {1ns} -r 2ns
+run 100ns
+
+
+#read
+
+force color1 1'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force numbers 4'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force color2 1'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+#output 0
+
+
+force color1 1'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force numbers 4'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force color2 1'd1
+force go 1
+run 5ns
+force go 0
+run 5ns
+#output 10
+
+
+force color1 1'd1
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force numbers 4'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force color2 1'd0
+force go 1
+run 5ns
+force go 0
+run 5ns
+#output 20
+
+force color1 1'd1
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force numbers 4'd7
+force go 1
+run 5ns
+force go 0
+run 5ns
+
+force color2 1'd1
+force go 1
+run 5ns
+force go 0
+run 5ns
+run 10ns
+#output 37
